@@ -1,0 +1,43 @@
+clear all; close all;
+a=arduino("/dev/cu.usbserial-0001","uno");
+
+figure
+h = animatedline;
+ax = gca;
+ax.YGrid = 'on';
+ax.YLim = [-0.1 5];
+%title of the graph
+title('Moisture vs time');
+%label x axis
+xlabel('Time [HH:MM:SS]');
+%label y axis
+ylabel('Voltage [volt]');
+
+stop = false;
+startTime = datetime('now');
+while ~ stop
+% Read current voltage value
+voltage = readVoltage(a ,'A0');
+% Get current time
+t = datetime('now') - startTime;
+% Add points to animation
+addpoints(h,datenum(t),voltage)
+% Update axes
+ax.XLim = datenum([t-seconds(15) t]);
+datetick('x','keeplimits')
+drawnow
+% Read current voltage value
+voltage=readVoltage(a, 'A0');
+if (voltage >=3)
+disp("Warning='Soil is dry, need water'");
+writeDigitalPin(a,'D2',1);
+writeDigitalPin(a,'D4',1);
+else
+disp("Soil is wet, no need for water")
+writeDigitalPin(a,'D2',0);
+writeDigitalPin(a,'D4',0);
+stop=1
+end
+%failsafe
+stop = readDigitalPin(a,'D6');
+end
