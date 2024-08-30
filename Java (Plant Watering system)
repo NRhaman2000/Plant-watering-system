@@ -1,0 +1,54 @@
+import org.firmata4j.Pin;
+import org.firmata4j.ssd1306.MonochromeCanvas;
+import org.firmata4j.ssd1306.SSD1306;
+import java.util.TimerTask;
+public class Watering_Plant extends TimerTask
+{
+
+    final Pin sensor;
+    final Pin pump;
+    final SSD1306 display;
+
+    Watering_Plant(Pin sensor, SSD1306 screen, Pin pump)
+
+    {
+        this.sensor = sensor;
+        this.display = screen;
+        this.pump = pump;
+    }
+
+
+    @Override
+
+    public void run()
+    {
+
+        display.getCanvas().clear();
+        display.getCanvas().setTextsize(1);
+        var displayvalue = "The sensor value is: \n" +String.valueOf(sensor.getValue());
+        display.getCanvas().drawString(0,0, displayvalue);
+
+
+        try
+        {
+            if (sensor.getValue() > 400)
+            {
+                display.getCanvas().drawString(0,15, "The plant is dry!");
+                pump.setValue(1);
+            }
+
+            else
+            {
+                display.getCanvas().drawString(0,15, "The plant is wet!");
+                pump.setValue(0);
+            }
+        }
+
+        catch (Exception e)
+        {
+            System.out.println("Exception: " + e);
+        }
+
+        display.display();
+    }
+}
